@@ -1,0 +1,5 @@
+Flask==2.3.3
+dashscope>=1.24.6
+pyaudio
+numpy
+flask-cors
