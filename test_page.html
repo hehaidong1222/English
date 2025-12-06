@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英语学习网站测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .test-container {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .test-btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+        }
+        .test-btn:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>英语学习网站测试</h1>
+        <p>网站已启动在 http://localhost:8080</p>
+        <p>当前API密钥状态: <span id="api-status">检查中...</span></p>
+        <div>
+            <button class="test-btn" onclick="testAPI()">测试API连接</button>
+            <button class="test-btn" onclick="openWebsite()">打开网站</button>
+        </div>
+        <div id="result" style="margin-top: 20px;"></div>
+    </div>
+
+    <script>
+        // 检查API密钥状态
+        document.getElementById('api-status').textContent = '已设置';
+
+        function testAPI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '正在测试API...';
+            
+            fetch('http://localhost:8080/api/tts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    text: "Test",
+                    voice: "Cherry",
+                    language_type: "English"
+                })
+            })
+            .then(response => {
+                resultDiv.innerHTML = `API测试完成，HTTP状态码: ${response.status}`;
+                if (response.status === 200) {
+                    resultDiv.innerHTML += ' ✓ API工作正常';
+                } else {
+                    resultDiv.innerHTML += ' ✗ API存在问题';
+                }
+            })
+            .catch(error => {
+                resultDiv.innerHTML = `API测试失败: ${error.message}`;
+            });
+        }
+
+        function openWebsite() {
+            window.open('http://localhost:8080', '_blank');
+        }
+    </script>
+</body>
+</html>

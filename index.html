@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英语单词学习卡片</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .word {
+            font-size: 3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .translation {
+            font-size: 1.5em;
+            color: #666;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .phonetic {
+            font-size: 1.2em;
+            color: #888;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            font-size: 1em;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #2196F3;
+            color: white;
+        }
+
+        .btn-tertiary {
+            background: #ff9800;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .audio-controls {
+            margin-top: 20px;
+        }
+
+        .play-btn {
+            padding: 10px 20px;
+            font-size: 1em;
+            background: #9c27b0;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .play-btn:hover {
+            background: #7b1fa2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .counter {
+            font-size: 1.2em;
+            color: white;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .loading {
+            display: none;
+            font-size: 1.2em;
+            color: white;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .card {
+                padding: 20px;
+                min-height: 200px;
+            }
+            
+            .word {
+                font-size: 2em;
+            }
+            
+            .translation {
+                font-size: 1.2em;
+            }
+            
+            .btn {
+                padding: 10px 15px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="color: white; text-align: center;">英语单词学习卡片</h1>
+        
+        <div class="card">
+            <div class="word" id="word">apple</div>
+            <div class="phonetic" id="phonetic">/ˈæp.əl/</div>
+            <div class="translation" id="translation">苹果</div>
+        </div>
+        
+        <div class="counter">
+            第 <span id="current-index">1</span> 个，共 <span id="total-count">10</span> 个
+        </div>
+        
+        <div class="audio-controls">
+            <button class="play-btn" id="play-btn">🔊 播放发音</button>
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-tertiary" id="prev-btn">⏮ 上一个</button>
+            <button class="btn btn-primary" id="next-btn">下一个 ⏭</button>
+        </div>
+        
+        <div class="loading" id="loading">正在播放发音...</div>
+    </div>
+
+    <script>
+        // 单词数据
+        const words = [
+            { word: "apple", phonetic: "/ˈæp.əl/", translation: "苹果", audio: null },
+            { word: "banana", phonetic: "/bəˈnɑː.nə/", translation: "香蕉", audio: null },
+            { word: "cat", phonetic: "/kæt/", translation: "猫", audio: null },
+            { word: "dog", phonetic: "/dɒɡ/", translation: "狗", audio: null },
+            { word: "elephant", phonetic: "/ˈel.ɪ.fənt/", translation: "大象", audio: null },
+            { word: "flower", phonetic: "/ˈflaʊ̯.ɚ/", translation: "花", audio: null },
+            { word: "guitar", phonetic: "/ɡɪˈtɑːr/", translation: "吉他", audio: null },
+            { word: "house", phonetic: "/haʊs/", translation: "房子", audio: null },
+            { word: "ice", phonetic: "/aɪs/", translation: "冰", audio: null },
+            { word: "jungle", phonetic: "/ˈdʒʌŋ.ɡəl/", translation: "丛林", audio: null }
+        ];
+
+        let currentIndex = 0;
+
+        // DOM 元素
+        const wordElement = document.getElementById('word');
+        const phoneticElement = document.getElementById('phonetic');
+        const translationElement = document.getElementById('translation');
+        const playBtn = document.getElementById('play-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const currentIndexElement = document.getElementById('current-index');
+        const totalCountElement = document.getElementById('total-count');
+        const loadingElement = document.getElementById('loading');
+
+        // 更新单词显示
+        function updateWordDisplay() {
+            const currentWord = words[currentIndex];
+            wordElement.textContent = currentWord.word;
+            phoneticElement.textContent = currentWord.phonetic;
+            translationElement.textContent = currentWord.translation;
+            currentIndexElement.textContent = currentIndex + 1;
+            totalCountElement.textContent = words.length;
+        }
+
+        // 播放发音 - 使用阿里云TTS
+        async function playPronunciation() {
+            loadingElement.style.display = 'block';
+            playBtn.disabled = true;
+            
+            try {
+                // 首先播放英语单词发音
+                await playTextToSpeech(words[currentIndex].word, 'English');
+                
+                // 稍等片刻后播放中文翻译发音
+                setTimeout(async () => {
+                    await playTextToSpeech(words[currentIndex].translation, 'Chinese');
+                    loadingElement.style.display = 'none';
+                    playBtn.disabled = false;
+                }, 1500); // 等待1.5秒后播放中文
+                
+            } catch (error) {
+                console.error('播放发音时出错:', error);
+                loadingElement.style.display = 'none';
+                playBtn.disabled = false;
+                alert('播放失败: ' + error.message);
+            }
+        }
+        
+        // 播放单个文本的TTS
+        async function playTextToSpeech(text, language) {
+            try {
+                const response = await fetch('/api/tts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        voice: 'Cherry',
+                        language_type: language
+                    })
+                });
+                
+                if (response.ok) {
+                    const audioBlob = await response.blob();
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    const audio = new Audio(audioUrl);
+                    
+                    // 返回Promise以确保音频播放完成
+                    return new Promise((resolve) => {
+                        audio.onended = () => {
+                            URL.revokeObjectURL(audioUrl);
+                            resolve();
+                        };
+                        
+                        audio.onerror = () => {
+                            URL.revokeObjectURL(audioUrl);
+                            resolve(); // 即使出错也继续下一个
+                        };
+                        
+                        audio.play();
+                    });
+                } else {
+                    throw new Error('TTS API 请求失败');
+                }
+            } catch (error) {
+                console.error('播放文本时出错:', text, error);
+                throw error;
+            }
+        }
+
+        // 下一个单词
+        function nextWord() {
+            currentIndex = (currentIndex + 1) % words.length;
+            updateWordDisplay();
+            playPronunciation(); // 自动播放下一个单词
+        }
+
+        // 上一个单词
+        function prevWord() {
+            currentIndex = (currentIndex - 1 + words.length) % words.length;
+            updateWordDisplay();
+            playPronunciation(); // 自动播放上一个单词
+        }
+
+        // 初始化
+        function init() {
+            updateWordDisplay();
+            totalCountElement.textContent = words.length;
+            
+            // 事件监听器
+            playBtn.addEventListener('click', playPronunciation);
+            nextBtn.addEventListener('click', nextWord);
+            prevBtn.addEventListener('click', prevWord);
+            
+            // 初始播放第一个单词
+            setTimeout(playPronunciation, 1000);
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
